@@ -29,17 +29,17 @@ aws configure set aws_session_token $session --profile ecr_access
 token=$(aws ecr get-authorization-token --region=$REGION \
   --profile ecr_access \
   --query authorizationData[].authorizationToken \
-  --output text | base64 --decode | cut -d: -f2)
+  --output text | base64 -d | cut -d: -f2)
 
 for ns in default kube-system
 do
   (
     set -x
-    /opt/bin/kubectl delete secret \
+    kubectl delete secret \
       --ignore-not-found ${secret_name} \
       --namespace ${ns}
 
-    /opt/bin/kubectl create secret docker-registry ${secret_name} \
+    kubectl create secret docker-registry ${secret_name} \
       --namespace ${ns} \
       --docker-server=https://${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com \
       --docker-username=AWS \
@@ -48,7 +48,7 @@ do
 
     # HACK: we had to append `|| true` because `patch` returns non-zero in case of no changes
     # https://github.com/kubernetes/kubernetes/issues/58212
-    /opt/bin/kubectl patch serviceaccount default \
+    kubectl patch serviceaccount default \
       --namespace ${ns} \
       -p "{\"imagePullSecrets\": [{\"name\":\"${secret_name}\"}]}" \
       || true
