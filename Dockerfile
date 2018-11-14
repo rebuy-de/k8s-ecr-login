@@ -1,5 +1,5 @@
 FROM alpine
 
-RUN touch foobar
+RUN touch foo
 
 
