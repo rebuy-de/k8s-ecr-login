@@ -2,8 +2,6 @@
 
 set -ex
 
-: ${ACCOUNT_ID?"Need to set ACCOUNT_ID"}
-: ${TRUST_ROLE:?"Need to set TRUST_ROLE"}
 : ${REGION:?"Need to set REGION"}
 
 secret_name=ecr-registry-${REGION}
@@ -12,19 +10,27 @@ secret_name=ecr-registry-${REGION}
 kubectl describe serviceaccount default -n default
 kubectl describe serviceaccount default -n kube-system
 
-STS=$( aws sts assume-role \
-  --role-arn $TRUST_ROLE \
-  --role-session-name 'default_session' \
-  --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-  --output text )
+if [[ -n $ACCOUNT_ID && -n $TRUST_ROLE ]]; then
+  STS=$(aws sts assume-role \
+    --role-arn $TRUST_ROLE \
+    --role-session-name 'default_session' \
+    --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+    --output text)
 
-key_id=$(echo $STS | cut -d ' ' -f1)
-secret=$(echo $STS | cut -d ' ' -f2)
-session=$(echo $STS | cut -d ' ' -f3)
+  key_id=$(echo $STS | cut -d ' ' -f1)
+  secret=$(echo $STS | cut -d ' ' -f2)
+  session=$(echo $STS | cut -d ' ' -f3)
 
-aws configure set aws_access_key_id $key_id --profile ecr_access
-aws configure set aws_secret_access_key $secret --profile ecr_access
-aws configure set aws_session_token $session --profile ecr_access
+  aws configure set aws_access_key_id $key_id --profile ecr_access
+  aws configure set aws_secret_access_key $secret --profile ecr_access
+  aws configure set aws_session_token $session --profile ecr_access
+elif [[ -n $AWS_ACCESS_KEY_ID && -n $AWS_SECRET_ACCESS_KEY ]]; then
+  aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile ecr_access
+  aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile ecr_access
+else
+  echo "You need to set valid credentials."
+  exit 1
+fi
 
 token=$(aws ecr get-authorization-token --region=$REGION \
   --profile ecr_access \
