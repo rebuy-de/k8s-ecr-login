@@ -24,7 +24,7 @@ if [[ -n $ACCOUNT_ID && -n $TRUST_ROLE ]]; then
   aws configure set aws_access_key_id $key_id --profile ecr_access
   aws configure set aws_secret_access_key $secret --profile ecr_access
   aws configure set aws_session_token $session --profile ecr_access
-elif [[ -n $AWS_ACCESS_KEY_ID && -n $AWS_SECRET_ACCESS_KEY ]]; then
+elif [[ -n $AWS_ACCESS_KEY_ID && -n $AWS_SECRET_ACCESS_KEY && -n $ACCOUNT_ID ]]; then
   aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile ecr_access
   aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile ecr_access
 else
