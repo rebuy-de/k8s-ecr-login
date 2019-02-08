@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:latest
 
 RUN apk add --no-cache \
     curl \
@@ -10,7 +10,7 @@ RUN apk add --no-cache \
 RUN pip install awscli
 
 RUN cd /usr/local/bin && \
-    curl -LO  https://storage.googleapis.com/kubernetes-release/release/v1.11.2/bin/linux/amd64/kubectl && \
+    curl -LO  https://storage.googleapis.com/kubernetes-release/release/v1.13.2/bin/linux/amd64/kubectl && \
     chmod +x /usr/local/bin/kubectl
 
 COPY run.sh /run.sh
