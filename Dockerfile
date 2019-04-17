@@ -16,4 +16,6 @@ RUN cd /usr/local/bin && \
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
+RUN adduser -D ecr-login
+USER ecr-login
 ENTRYPOINT ["/run.sh"]
