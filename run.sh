@@ -37,7 +37,7 @@ token=$(aws ecr get-authorization-token --region=$REGION \
   --query authorizationData[].authorizationToken \
   --output text | base64 -d | cut -d: -f2)
 
-for ns in default kube-system
+for ns in default kube-system airflow
 do
   (
     set -x
