@@ -37,7 +37,7 @@ token=$(aws ecr get-authorization-token --region=$REGION \
   --query authorizationData[].authorizationToken \
   --output text | base64 -d | cut -d: -f2)
 
-for ns in default kube-system airflow
+for ns in "$@"
 do
   (
     set -x
@@ -52,11 +52,8 @@ do
       --docker-password="${token}" \
       --docker-email=none
 
-    # HACK: we had to append `|| true` because `patch` returns non-zero in case of no changes
-    # https://github.com/kubernetes/kubernetes/issues/58212
     kubectl patch serviceaccount default \
       --namespace ${ns} \
-      -p "{\"imagePullSecrets\": [{\"name\":\"${secret_name}\"}]}" \
-      || true
+      -p "{\"imagePullSecrets\": [{\"name\":\"${secret_name}\"}]}"
   )
 done
